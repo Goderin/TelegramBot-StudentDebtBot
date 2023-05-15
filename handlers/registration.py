@@ -24,17 +24,17 @@ class RegistrationTeacherStates(StatesGroup):
 async def start_command(message: types.Message) -> None:
     await message.delete()
     if not await users_db.check_registration(message.from_user.id):
-        await bot.send_message(chat_id=message.from_user.id, text="Этот бот создан для упрощенной работы",
+        await bot.send_message(chat_id=message.from_user.id, text="Добро пожаловать на страницу бота для упрощенной работы кураторов и студентов с задолженностями!\n Выберите тип пользователя, который хотите создать.",
                                reply_markup=registration_kb.select_role())
     else:
-        await bot.send_message(chat_id=message.from_user.id, text="Вы уже зарегестрированы")
+        await bot.send_message(chat_id=message.from_user.id, text="Вы уже зарегестрированы!")
 
 
 # РЕГИСТРАЦИЯ ПРЕПОДАВАТЕЛЯ-------------------------------------------------------------------------------------------
 async def registration_teacher(callback: types.CallbackQuery) -> None:
     await bot.delete_message(chat_id=callback.from_user.id, message_id=callback.message.message_id)
     await bot.send_message(chat_id=callback.from_user.id,
-                           text="Давай сначала проверим преподавтель ли вы, поэтому для начала введите код")
+                           text="Для проверки подленности выбранного типа пользователя введите выданный вам код:")
     await RegistrationTeacherStates.code.set()
 
 
@@ -45,7 +45,7 @@ async def check_registration_code(message: types.Message, state: FSMContext) -> 
         await RegistrationTeacherStates.next()
     else:
         await bot.send_message(chat_id=message.from_user.id,
-                               text='К сожалению вы не прошли проверку, поробуйте регистрацию еще раз. Для этого введите комманду /start')
+                               text='К сожалению вы не прошли проверку, попробуйте снова. Для этого введите комманду /start')
         await state.finish()
 
 
@@ -63,7 +63,7 @@ async def load_group_teacher(message: types.Message, state: FSMContext) -> None:
         data['group'] = message.text
     if await debts_db.is_table_exists(data['group']):
         await users_db.add_teacher(data['user_id'], data['full_name'], data['group'])
-        await bot.send_message(chat_id=message.from_user.id, text='Отлично', reply_markup=admin_kb.kb_select_student)
+        await bot.send_message(chat_id=message.from_user.id, text='Отлично, ваш аккаунт создан!', reply_markup=admin_kb.kb_select_student)
         await state.finish()
     else:
         await bot.send_message(chat_id=message.from_user.id, text="Такой группы не существует, введите заново")
@@ -75,7 +75,7 @@ async def load_group_teacher(message: types.Message, state: FSMContext) -> None:
 async def registration_student(callback: types.CallbackQuery) -> None:
     await bot.delete_message(chat_id=callback.from_user.id, message_id=callback.message.message_id)
     await bot.send_message(chat_id=callback.from_user.id,
-                           text="Привет студент, давай зарегестрируемся. Для этого для начала введи свое имя и фамилию")
+                           text="Привет студент, давай зарегестрируемся! Для начала введи свое имя и фамилию")
     await RegistrationStudentStates.full_name.set()
 
 
@@ -94,7 +94,7 @@ async def load_group_student(message: types.Message, state: FSMContext) -> None:
     if await debts_db.is_table_exists(data['group']):
         await users_db.add_student(data['user_id'], data['full_name'], data['group'])
         await debts_db.add_user_id_students(data['group'], data['user_id'])
-        await bot.send_message(chat_id=message.from_user.id, text="Отлично ты зарегестрирован",
+        await bot.send_message(chat_id=message.from_user.id, text="Отлично, ты зарегестрирован!",
                                reply_markup=client_kb.kb_client_commands)
         await ClientStates.commands.set()
     else:
@@ -102,7 +102,7 @@ async def load_group_student(message: types.Message, state: FSMContext) -> None:
 
 
 def register_handlers_start_command(dp: Dispatcher) -> None:
-    dp.register_message_handler(start_command, commands=['start'])
+    dp.register_message_handler(start_command, commands=['start'], state="*")
 
 
 def register_handlers_registration_teacher(dp: Dispatcher) -> None:

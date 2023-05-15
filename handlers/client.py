@@ -39,7 +39,7 @@ async def writing_message_to_teacher(message: types.Message):
 async def confirmation_message(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['message'] = message.text
-    await bot.send_message(chat_id=message.from_user.id, text='Уверены ли вы, что хотите отправить сообщение?',
+    await bot.send_message(chat_id=message.from_user.id, text='Вы уверены, что хотите отправить сообщение?',
                            reply_markup=client_kb.kb_confirmation)
     await ClientStates.confirmation_message.set()
 
@@ -71,7 +71,7 @@ async def rename_start(message: types.Message):
 async def confirmation_rename(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['new_name'] = message.text
-    await bot.send_message(chat_id=message.from_user.id, text='Уверены ли вы, что хотите изменить имя?',
+    await bot.send_message(chat_id=message.from_user.id, text='Вы уверены, что хотите изменить имя?',
                            reply_markup=client_kb.kb_confirmation)
     await ClientStates.confirmation_rename.set()
 

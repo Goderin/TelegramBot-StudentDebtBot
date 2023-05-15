@@ -85,7 +85,7 @@ async def writing_message_to_student(message: types.Message):
 async def confirmation_message(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['message'] = message.text
-    await bot.send_message(chat_id=message.from_user.id, text='Уверены ли вы, что хотите отправить сообщение?',
+    await bot.send_message(chat_id=message.from_user.id, text='Вы уверены, что хотите отправить сообщение?',
                            reply_markup=admin_kb.kb_confirmation)
     await AdminStates.confirmation.set()
 
@@ -108,7 +108,7 @@ async def send_message_to_student(message: types.Message, state: FSMContext):
 
 
 async def confirmation_delete_student(message: types.Message):
-    await bot.send_message(chat_id=message.from_user.id, text='Уверены ли вы, что хотите удалить студента?',
+    await bot.send_message(chat_id=message.from_user.id, text='Вы уверены, что хотите удалить студента?',
                            reply_markup=admin_kb.kb_confirmation)
     await AdminStates.student_delete.set()
 
@@ -155,7 +155,7 @@ async def agree_add_debt(message: types.Message):
 
 async def delete_debt_start(message: types.Message):
     await message.delete()
-    await bot.send_message(chat_id=message.from_user.id, text="Введите номер задолженности, который хотите удалить")
+    await bot.send_message(chat_id=message.from_user.id, text="Введите номер задолженности, которую хотите удалить")
     await AdminStates.debt_delete_number.set()
 
 
@@ -164,7 +164,6 @@ async def select_debt_number_delete(message: types.Message, state: FSMContext):
         async with state.proxy() as data:
             data['name_debt'] = await debts_db.get_not_null_debt_of_number(message.from_user.id, data['student_id'],
                                                                            message.text)
-            print(data['name_debt'])
         await bot.send_message(chat_id=message.from_user.id, text="Вы действительно хотите удалить задолженность?",
                                reply_markup=admin_kb.kb_confirmation)
         await AdminStates.debt_confirm_delete.set()
