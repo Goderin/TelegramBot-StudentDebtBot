@@ -1,0 +1,3 @@
+TOKEN_API = ""
+
+PASSWORD_TEACHER = ""
