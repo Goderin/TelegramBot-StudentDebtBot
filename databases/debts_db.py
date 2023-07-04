@@ -1,6 +1,6 @@
 import sqlite3 as sq
 
-from databases.users_db import get_group
+from databases import users_db
 
 
 async def db_debts_start():
@@ -27,7 +27,7 @@ async def delete_student(student_id, teacher_id):
     Удаление выбранного студента
     """
 
-    group = await get_group(teacher_id)
+    group = await users_db.get_group(teacher_id)
     cur.execute("DELETE FROM '{}' WHERE user_id = ?".format(group), (student_id,))
 
     db.commit()
@@ -51,7 +51,7 @@ async def get_not_null_debts_student_text(teacher_id, student_id) -> str:
     """
     Получение списка всех не пустых задолженностей для выбранного студента
     """
-    group = await get_group(teacher_id)
+    group = await users_db.get_group(teacher_id)
 
     # Получаем названия столбцов таблицы
     query = "PRAGMA table_info('{}')".format(group)
@@ -90,7 +90,7 @@ async def get_not_null_debt_of_number(teacher_id, student_id, column_number) -> 
     для выбранного студента
     Вовращает одно навзание
     """
-    group = await get_group(teacher_id)
+    group = await users_db.get_group(teacher_id)
 
     # Получаем названия столбцов таблицы
     query = "PRAGMA table_info('{}')".format(group)
@@ -117,7 +117,7 @@ async def get_all_debts_student_text(teacher_id) -> str:
     """
     Получение списка всех задолженностей в таблице
     """
-    group = await get_group(teacher_id)
+    group = await users_db.get_group(teacher_id)
 
     # Получаем названия столбцов таблицы
     query = "PRAGMA table_info('{}')".format(group)
@@ -138,7 +138,7 @@ async def get_all_debt_of_number(teacher_id, student_id, column_number):
     Получение названия задолженности из списка всех задолженностей по номеру
     Вовращает одно навзание
     """
-    group = await get_group(teacher_id)
+    group = await users_db.get_group(teacher_id)
 
     # Получаем названия столбцов таблицы
     query = "PRAGMA table_info('{}')".format(group)
@@ -162,7 +162,7 @@ async def delete_debt_of_name(name_debt, teacher_id, student_id):
     """
     Удаление задолженности по имени
     """
-    group = await get_group(teacher_id)
+    group = await users_db.get_group(teacher_id)
 
     query = "UPDATE '{}' SET '{}' = NULL WHERE user_id = ?".format(group, name_debt)
     cur.execute(query, (student_id,))
@@ -173,7 +173,7 @@ async def update_debt_of_name(name_debt, teacher_id, student_id, text):
     """
     Обновление задолженности в таблице по имени
     """
-    group = await get_group(teacher_id)
+    group = await users_db.get_group(teacher_id)
     query = "UPDATE '{}' SET '{}' = ? WHERE user_id = ?".format(group, name_debt)
     cur.execute(query, (text, student_id,))
     db.commit()
@@ -183,7 +183,7 @@ async def add_debt_of_name(name_debt, teacher_id, student_id, text):
     """
     Добавление новой задолженности либо присвоение к уже существующей
     """
-    group = await get_group(teacher_id)
+    group = await users_db.get_group(teacher_id)
 
     # Получаем названия столбцов таблицы
     query = "PRAGMA table_info('{}')".format(group)

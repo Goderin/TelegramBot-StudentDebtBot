@@ -1,15 +1,51 @@
 import sqlite3 as sq
 
+from databases import debts_db
+
 
 async def db_users_start():
     global db, cur
     db = sq.connect("databases/users.db")
     cur = db.cursor()
 
-    cur.execute("CREATE TABLE IF NOT EXISTS students(user_id TEXT PRIMARY KEY, full_name TEXT, groups TEXT)")
-    cur.execute("CREATE TABLE IF NOT EXISTS teachers(user_id TEXT PRIMARY KEY, full_name TEXT, groups TEXT)")
-
+    cur.execute("CREATE TABLE IF NOT EXISTS students(user_id TEXT PRIMARY KEY, identifier TEXT, full_name TEXT, "
+                "groups TEXT)")
+    cur.execute("CREATE TABLE IF NOT EXISTS teachers(user_id TEXT PRIMARY KEY, identifier TEXT, full_name TEXT, "
+                "groups TEXT)")
+    cur.execute("CREATE TABLE IF NOT EXISTS employee(user_id TEXT PRIMARY KEY, identifier TEXT, full_name TEXT)")
     db.commit()
+
+
+async def add_user(identifier, user_id):
+    student = cur.execute(
+        "SELECT identifier FROM students WHERE identifier == '{key}'".format(key=identifier)).fetchone()
+    teacher = cur.execute(
+        "SELECT identifier FROM teachers WHERE identifier == '{key}'".format(key=identifier)).fetchone()
+    employee = cur.execute(
+        "SELECT identifier FROM employee WHERE identifier == '{key}'".format(key=identifier)).fetchone()
+
+    if student:
+        query = "UPDATE students SET user_id = ? WHERE identifier = ?"
+        values = (user_id, identifier)
+        cur.execute(query, values)
+        await debts_db.add_user_id_students(await get_group(user_id), user_id)
+        db.commit()
+
+        return 1
+    elif teacher:
+        query = "UPDATE teacher SET user_id = ? WHERE identifier = ?"
+        values = (user_id, identifier)
+        cur.execute(query, values)
+        db.commit()
+
+        return 2
+    elif employee:
+        query = "UPDATE employee SET user_id = ? WHERE identifier = ?"
+        values = (user_id, identifier)
+        cur.execute(query, values)
+        db.commit()
+
+        return 3
 
 
 async def add_student(student_id, full_name, group):
@@ -48,6 +84,24 @@ async def add_teacher(teacher_id, full_name, group):
     db.commit()
 
 
+async def check_identifier(identifier) -> bool:
+    """
+    Проверка на зарегестрированность в системе
+    """
+    student = cur.execute(
+        "SELECT identifier FROM students WHERE identifier == '{key}'".format(key=identifier)).fetchone()
+    teacher = cur.execute(
+        "SELECT identifier FROM teachers WHERE identifier == '{key}'".format(key=identifier)).fetchone()
+    employee = cur.execute(
+        "SELECT identifier FROM employee WHERE identifier == '{key}'".format(key=identifier)).fetchone()
+    db.commit()
+
+    if not student and not teacher and not employee:
+        return False
+    else:
+        return True
+
+
 async def check_registration(user_id) -> bool:
     """
     Проверка на регистрацию
@@ -55,9 +109,10 @@ async def check_registration(user_id) -> bool:
 
     student = cur.execute("SELECT user_id FROM students WHERE user_id == '{key}'".format(key=user_id)).fetchone()
     teacher = cur.execute("SELECT user_id FROM teachers WHERE user_id == '{key}'".format(key=user_id)).fetchone()
+    employee = cur.execute("SELECT user_id FROM employee WHERE user_id == '{key}'".format(key=user_id)).fetchone()
     db.commit()
 
-    if not student and not teacher:
+    if not student and not teacher and not employee:
         return False
     else:
         return True

@@ -12,8 +12,6 @@ async def on_startup(_):
 
 
 registration.register_handlers_start_command(dp)
-registration.register_handlers_registration_teacher(dp)
-registration.register_handlers_registration_student(dp)
 
 admin.register_handlers_admin(dp)
 
